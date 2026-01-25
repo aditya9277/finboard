@@ -21,7 +21,7 @@ export default function Footer() {
               Features
             </a>
             <a
-              href="https://github.com"
+              href="https://github.com/aditya9277/finboard"
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-400 hover:text-white transition-colors">

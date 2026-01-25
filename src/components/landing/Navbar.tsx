@@ -44,7 +44,7 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
               Features
             </a>
             <a
-              href="https://github.com"
+              href="https://github.com/aditya9277/finboard"
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-600 hover:text-slate-900 transition-colors font-medium flex items-center gap-2">
@@ -83,7 +83,7 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
                 Features
               </a>
               <a
-                href="https://github.com"
+                href="https://github.com/aditya9277/finboard"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-600 hover:text-slate-900 transition-colors font-medium flex items-center gap-2">
