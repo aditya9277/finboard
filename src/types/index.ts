@@ -3,6 +3,8 @@
 export type WidgetType = 'card' | 'table' | 'chart';
 export type ChartType = 'line' | 'candlestick' | 'area';
 export type ThemeMode = 'light' | 'dark';
+export type SortOrder = 'asc' | 'desc';
+export type DataRefreshStrategy = 'manual' | 'auto' | 'realtime';
 
 export interface FieldConfig {
   path: string;        // JSON path to the field (e.g., "data.rates.USD")
@@ -10,6 +12,7 @@ export interface FieldConfig {
   format?: 'currency' | 'percentage' | 'number' | 'text';
   prefix?: string;
   suffix?: string;
+  sortable?: boolean;  // Whether this field can be sorted
 }
 
 // API Key configuration for services that require authentication
@@ -22,6 +25,8 @@ export interface ApiKeyConfig {
   dailyLimit?: number;    // Requests per day limit
   usageCount?: number;    // Current usage count
   lastReset?: string;     // Last time the count was reset
+  createdAt?: string;     // When the API key was added
+  expiresAt?: string;     // Optional expiration date for the API key
 }
 
 export interface WidgetConfig {
@@ -31,6 +36,7 @@ export interface WidgetConfig {
   apiUrl: string;
   apiKeyId?: string;      // Reference to stored API key
   refreshInterval: number;  // in seconds
+  refreshStrategy?: DataRefreshStrategy; // How to refresh data
   fields: FieldConfig[];
   chartType?: ChartType;
   chartDataPath?: string;   // Path to array data for charts
@@ -38,6 +44,9 @@ export interface WidgetConfig {
   chartYKey?: string;       // Y-axis key
   tableSearchEnabled?: boolean;
   tablePaginationSize?: number;
+  sortBy?: string;          // Default sort field
+  sortOrder?: SortOrder;    // Default sort order
+  timeout?: number;         // Request timeout in milliseconds
 }
 
 export interface LayoutItem {
@@ -53,10 +62,12 @@ export interface LayoutItem {
 export interface DashboardConfig {
   id: string;
   name: string;
+  description?: string;    // Dashboard description
   widgets: WidgetConfig[];
   layout: LayoutItem[];
   createdAt: string;
   updatedAt: string;
+  isPublic?: boolean;       // Whether the dashboard is publicly accessible
 }
 
 export interface ApiResponse {
@@ -64,6 +75,7 @@ export interface ApiResponse {
   error?: string;
   loading: boolean;
   lastUpdated?: Date;
+  statusCode?: number;      // HTTP status code
 }
 
 export interface CacheEntry {
@@ -78,5 +90,15 @@ export interface DashboardTemplate {
   name: string;
   description: string;
   thumbnail?: string;
+  category?: string;        // Category for organizing templates
+  tags?: string[];          // Tags for filtering
   config: Omit<DashboardConfig, 'id' | 'createdAt' | 'updatedAt'>;
+}
+
+// Error handling interface
+export interface ApiError {
+  code: string;
+  message: string;
+  details?: unknown;
+  timestamp: string;
 }
