@@ -12,6 +12,21 @@ interface RateLimitEntry {
 
 const rateLimitTracker = new Map<string, RateLimitEntry>();
 
+// Response statistics tracking
+interface ResponseStats {
+  totalRequests: number;
+  cachedRequests: number;
+  failedRequests: number;
+  lastUpdated: number;
+}
+
+const responseStats: ResponseStats = {
+  totalRequests: 0,
+  cachedRequests: 0,
+  failedRequests: 0,
+  lastUpdated: Date.now(),
+};
+
 class ApiCache {
   private cache: Map<string, CacheEntry> = new Map();
 
@@ -42,9 +57,29 @@ class ApiCache {
   clear(): void {
     this.cache.clear();
   }
+
+  getStats() {
+    return {
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys()),
+    };
+  }
 }
 
 export const apiCache = new ApiCache();
+
+// Get API response statistics
+export function getResponseStats(): ResponseStats {
+  return { ...responseStats };
+}
+
+// Reset API response statistics
+export function resetResponseStats(): void {
+  responseStats.totalRequests = 0;
+  responseStats.cachedRequests = 0;
+  responseStats.failedRequests = 0;
+  responseStats.lastUpdated = Date.now();
+}
 
 // Check and update rate limiting for an API key
 export function checkRateLimit(apiKey: ApiKeyConfig): { allowed: boolean; message?: string } {
@@ -216,10 +251,13 @@ export async function fetchApiData(
   useCache: boolean = true,
   apiKey?: ApiKeyConfig
 ): Promise<{ data: unknown; error?: string }> {
+  responseStats.totalRequests++;
+
   // Check rate limit if API key is provided
   if (apiKey) {
     const rateLimitCheck = checkRateLimit(apiKey);
     if (!rateLimitCheck.allowed) {
+      responseStats.failedRequests++;
       return { data: null, error: rateLimitCheck.message };
     }
   }
@@ -232,6 +270,7 @@ export async function fetchApiData(
   if (useCache) {
     const cached = apiCache.get(cacheKey);
     if (cached) {
+      responseStats.cachedRequests++;
       return { data: cached };
     }
   }
@@ -240,6 +279,7 @@ export async function fetchApiData(
     const response = await fetch(finalUrl);
     
     if (!response.ok) {
+      responseStats.failedRequests++;
       if (response.status === 429) {
         return { data: null, error: 'API rate limit exceeded. Please try again later.' };
       }
@@ -258,6 +298,7 @@ export async function fetchApiData(
     
     return { data };
   } catch (error) {
+    responseStats.failedRequests++;
     return { 
       data: null, 
       error: error instanceof Error ? error.message : 'Failed to fetch data' 
